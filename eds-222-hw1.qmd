@@ -1,7 +1,7 @@
 ---
 title: "EDS 222: Homework 1"
-date: "Assigned ???, due ???"
-author: "Your Name Here"
+date: "Assigned: 9/30/2024, Due: 10/14/2024"
+author: "Rachel Swick"
 ---
 
 ## Background
@@ -33,12 +33,41 @@ crowdsourced <- readRDS(file.path("data", "airpol-PK-crowdsourced.RDS"))
 govt <- readRDS(file.path("data", "airpol-PK-govt.RDS"))
 ```
 
+```{r}
+# Load libraries
+library(tidyverse)
+library(dplyr)
+
+# Read in data
+crowdsourced <- readRDS(file.path("data", "airpol-PK-crowdsourced.RDS"))
+govt <- readRDS(file.path("data", "airpol-PK-govt.RDS"))
+```
+
 ::: callout-warning
 There's an implicit assumption about file organization in the code above. What is it? How can you make the code work?
+
+The assumption is that the two data files are in a folder named "data". If the data files are not stored within a seperate folder in your R-project, only the file name would need to be included.
 :::
 
 1.  These dataframes have one row per pollution observation. How many pollution records are in each dataset?
+
+```{r}
+# Number of pollution records
+govt_records <- nrow(govt)
+cat("There are", govt_records, "unique government pollution records.\n")
+crowdsourced_records <- nrow(crowdsourced)
+cat("There are", crowdsourced_records, "unique crowdsourced pollution records.")
+```
+
 2.  Each monitor is located at a unique latitude and longitude location. How many unique monitors are in each dataset?
+
+```{r}
+# Number of unique monitoring locations
+govt_sites <- n_distinct(govt$latitude, govt$longitude)
+cat("There are", govt_sites, "unique government monitoring locations.\n")
+crowdsourced_sites <- n_distinct(crowdsourced$longitude, crowdsourced$latitude)
+cat("There are", crowdsourced_sites, "unique crowdsourced monitoring locations.")
+```
 
 ::: callout-tip
 `group_by(longitude,latitude)` and `cur_group_id()` in `dplyr` will help in creating a unique identifier for each (longitude, latitude) pair.
@@ -48,21 +77,60 @@ There's an implicit assumption about file organization in the code above. What i
 
 The goal of pollution monitoring in Lahore is to measure the average pollution conditions across the city.
 
-1.  What is the *population* in this setting? Please be precise.
+1.  What is the *population* in this setting? Please be precise. The population is air quality throughout the city of Lahore.
 
-2.  What are the *samples* in this setting? Please be precise.
+2.  What are the *samples* in this setting? Please be precise. The samples are the monitoring sites.
 
-3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters.
+3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters. If you are looking at the government data,
 
 ### Question 3
 
 1.  For both the government data and the crowd-sourced data, report the sample mean, sample minimum, and sample maximum value of PM 2.5 (measured in $\mu g/m^3$).
+
+```{r}
+# Calculate sample means
+govt_sample_mean <- mean(govt$PM)
+cat("The government data has a sample mean of", govt_sample_mean, ".\n")
+crowdsourced_sample_mean <- mean(crowdsourced$PM)
+cat("The crowdsourced data has a sample mean of", crowdsourced_sample_mean,".\n" )
+
+# Calculate sample minimums
+govt_sample_min <- min(govt$PM)
+cat("The government data has a sample minimum of", govt_sample_min, ".\n")
+crowdsourced_sample_min <- min(crowdsourced$PM)
+cat("The crowdsourced data has a sample minimum of", crowdsourced_sample_min,".\n" )
+
+# Calculate sample maximums
+govt_sample_max <- max(govt$PM)
+cat("The government data has a sample max of", govt_sample_max, ".\n")
+crowdsourced_sample_max <- max(crowdsourced$PM)
+cat("The crowdsourced data has a sample max of", crowdsourced_sample_max,".\n" )
+```
+
 2.  Discuss any key differences that you see between these two samples.
+
+The crowdsourced data has a larger sample mean then the government data. The sample minimum values are similar between the two data sets. The crowdsourced data has a much higher sample maximum value then the government data.
+
 3.  Are the differences in mean pollution as expected, given what we know about the sampling strategies?
+
+Yes. We expected the sample mean of the crowdsourced data to be higher than the sample mean of the government data because the government is thought to be intentionally choosing monitoring locations with better air quality.
 
 ### Question 4
 
 Use the location of the air pollution stations for both of the sampling strategies to generate a map showing locations of each observation. Color the two samples with different colors to highlight how each sample obtains measurements from different parts of the city.
+
+```{r}
+ggplot(data = govt,
+       aes(x = longitude,
+           y = latitude,
+           color = "blue")) +
+  geom_point() +
+  geom_point(data = crowdsourced,
+             aes(x = longitude,
+                 y = latitude,
+                 color = "yellow"))
+
+```
 
 ::: callout-tip
 `longitude` indicates location in the *x*-direction, while `latitude` indicates location in the *y*-direction. With `ggplot2` this should be nothing fancy. We'll do more spatial data in `R` later in the course.
@@ -71,6 +139,8 @@ Use the location of the air pollution stations for both of the sampling strategi
 ### Question 5
 
 The local newspaper in Pakistan, *Dawn*, claims that the government is misreporting the air pollution levels in Lahore. Do the locations of monitors in question 4, relative to crowd-sourced monitors, suggest anything about a possible political bias?
+
+Yes. The government monitoring sites are clumped near each other, while the crowdsourced monitoring sites are spread across the city. 
 
 ### Question 6
 
@@ -81,6 +151,14 @@ NASA's satellite data indicates that the average PM across Lahore is 89.2 $\mu g
 #### Question 6.1
 
 First, generate a *random sample* of size $n=1000$ air pollution records by (i) pooling observations across the government and the crowd-sourced data; and (ii) drawing observations at random from this pooled sample.
+
+```{r}
+# Ensure reproducibility 
+set.seed(4567)
+
+
+```
+
 
 ::: callout-tip
 `bind_rows()` may be helpful.
