@@ -1,6 +1,6 @@
 ---
 title: "EDS 222: Homework 1"
-date: "Assigned: 9/30/2024, Due: 10/14/2024"
+date: "10/14/2024"
 author: "Rachel Swick"
 ---
 
@@ -52,9 +52,10 @@ The assumption is that the two data files are in a folder named "data". If the d
 1.  These dataframes have one row per pollution observation. How many pollution records are in each dataset?
 
 ```{r}
-# Number of pollution records
+# Number of government pollution records
 govt_records <- nrow(govt)
 cat("There are", govt_records, "unique government pollution records.\n")
+# Number of crowd-sourced pollution records
 crowdsourced_records <- nrow(crowdsourced)
 cat("There are", crowdsourced_records, "unique crowdsourced pollution records.")
 ```
@@ -62,9 +63,11 @@ cat("There are", crowdsourced_records, "unique crowdsourced pollution records.")
 2.  Each monitor is located at a unique latitude and longitude location. How many unique monitors are in each dataset?
 
 ```{r}
-# Number of unique monitoring locations
+# Number of unique government monitoring locations
 govt_sites <- n_distinct(govt$latitude, govt$longitude)
 cat("There are", govt_sites, "unique government monitoring locations.\n")
+
+# Number of unique crowd-sourced monitoring locations
 crowdsourced_sites <- n_distinct(crowdsourced$longitude, crowdsourced$latitude)
 cat("There are", crowdsourced_sites, "unique crowdsourced monitoring locations.")
 ```
@@ -77,11 +80,17 @@ cat("There are", crowdsourced_sites, "unique crowdsourced monitoring locations."
 
 The goal of pollution monitoring in Lahore is to measure the average pollution conditions across the city.
 
-1.  What is the *population* in this setting? Please be precise. The population is air quality throughout the city of Lahore.
+1.  What is the *population* in this setting? Please be precise. 
 
-2.  What are the *samples* in this setting? Please be precise. The samples are the monitoring sites.
+The population is air quality throughout the city of Lahore.
 
-3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters. If you are looking at the government data,
+2.  What are the *samples* in this setting? Please be precise. 
+
+The samples are the air quality measures at the monitoring sites.
+
+3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters. 
+
+The government data suffers from sampling bias because the government monitoring sites are not a random sample of air quality measures in the city of Lahore. This will likely result in the sample mean of PM 2.5 being lower than the true population mean. The crowd-sourced data also has the potential to suffer from sampling bias. Individuals who agree to have monitoring units near their homes are businesses may be incentivized to have a monitoring unit within their home or business if they know the air quaility in their area is bad. The crowd-sourced mean is more likely to me closer to the true sample mean of the population.  
 
 ### Question 3
 
@@ -90,45 +99,45 @@ The goal of pollution monitoring in Lahore is to measure the average pollution c
 ```{r}
 # Calculate sample means
 govt_sample_mean <- mean(govt$PM)
-cat("The government data has a sample mean of", govt_sample_mean, ".\n")
+cat("The government data has a sample mean of", govt_sample_mean, "\n")
 crowdsourced_sample_mean <- mean(crowdsourced$PM)
-cat("The crowdsourced data has a sample mean of", crowdsourced_sample_mean,".\n" )
+cat("The crowdsourced data has a sample mean of", crowdsourced_sample_mean,"\n" )
 
 # Calculate sample minimums
 govt_sample_min <- min(govt$PM)
-cat("The government data has a sample minimum of", govt_sample_min, ".\n")
+cat("The government data has a sample minimum of", govt_sample_min, "\n")
 crowdsourced_sample_min <- min(crowdsourced$PM)
-cat("The crowdsourced data has a sample minimum of", crowdsourced_sample_min,".\n" )
+cat("The crowdsourced data has a sample minimum of", crowdsourced_sample_min,"\n" )
 
 # Calculate sample maximums
 govt_sample_max <- max(govt$PM)
-cat("The government data has a sample max of", govt_sample_max, ".\n")
+cat("The government data has a sample max of", govt_sample_max, "\n")
 crowdsourced_sample_max <- max(crowdsourced$PM)
-cat("The crowdsourced data has a sample max of", crowdsourced_sample_max,".\n" )
+cat("The crowdsourced data has a sample max of", crowdsourced_sample_max,"\n" )
 ```
 
 2.  Discuss any key differences that you see between these two samples.
 
-The crowdsourced data has a larger sample mean then the government data. The sample minimum values are similar between the two data sets. The crowdsourced data has a much higher sample maximum value then the government data.
+The crowd-sourced data has a larger sample mean then the government data. The sample minimum values are similar between the two data sets. The crowd-sourced data has a much higher sample maximum value then the government data.
 
 3.  Are the differences in mean pollution as expected, given what we know about the sampling strategies?
 
-Yes. We expected the sample mean of the crowdsourced data to be higher than the sample mean of the government data because the government is thought to be intentionally choosing monitoring locations with better air quality.
+Yes. We expected the sample mean of the crowd-sourced data to be higher than the sample mean of the government data because the government is thought to be intentionally choosing monitoring locations with better air quality.
 
 ### Question 4
 
 Use the location of the air pollution stations for both of the sampling strategies to generate a map showing locations of each observation. Color the two samples with different colors to highlight how each sample obtains measurements from different parts of the city.
 
 ```{r}
-ggplot(data = govt,
-       aes(x = longitude,
-           y = latitude,
-           color = "blue")) +
-  geom_point() +
-  geom_point(data = crowdsourced,
+ggplot() +
+  geom_point(data = govt, 
              aes(x = longitude,
                  y = latitude,
-                 color = "yellow"))
+                 colour = "Government")) +
+  geom_point(data = crowdsourced, 
+             aes(x = longitude, 
+                 y = latitude, 
+                 colour = "Crowd-sourced"))
 
 ```
 
@@ -140,7 +149,7 @@ ggplot(data = govt,
 
 The local newspaper in Pakistan, *Dawn*, claims that the government is misreporting the air pollution levels in Lahore. Do the locations of monitors in question 4, relative to crowd-sourced monitors, suggest anything about a possible political bias?
 
-Yes. The government monitoring sites are clumped near each other, while the crowdsourced monitoring sites are spread across the city. 
+Yes. The government monitoring sites are clumped near each other, while the crowd-sourced monitoring sites are spread across the city. 
 
 ### Question 6
 
@@ -156,7 +165,11 @@ First, generate a *random sample* of size $n=1000$ air pollution records by (i) 
 # Ensure reproducibility 
 set.seed(4567)
 
+# Combine the government and crowd-sourced datasets
+combined_dataset <- bind_rows(govt, crowdsourced)
 
+# Create a random sample of 1000 points from the combined dataset
+randomized_dataset <- slice_sample(.data = combined_dataset, n = 1000)
 ```
 
 
@@ -166,6 +179,30 @@ set.seed(4567)
 
 Second, create a *stratified random sample*. Do so by (i) stratifying your pooled data-set into strata of 0.01 degrees of latitude, and (ii) randomly sampling 200 air pollution observations from each stratum.
 
+```{r}
+# Stratify the combined datset into strata of 0.01 degrees latitude
+rounded_randomized_dataset <- randomized_dataset %>% 
+  mutate(lat_rounded = round(latitude, digits = 2))  
+
+# Create a rando sample of 200 points from each stratum
+stratified_random_sample <- rounded_randomized_dataset %>% 
+  group_by(lat_rounded) %>% 
+  slice_sample(n = 200)
+```
+
 #### Question 6.2
 
 Compare estimated means of PM 2.5 for each sampling strategy to the NASA estimate of 89.2 $\mu g/m^3$. Which sample seems to match the satellite data best? What would you recommend the Prime Minister do? Does your proposed sampling strategy rely more on government or on crowd-sourced data? Why might that be the case?
+
+```{r}
+# Compare sample means based on sampling strategy
+govt_sample_mean <- mean(govt$PM)
+cat("The government data has a sample mean of", govt_sample_mean, "\n")
+crowdsourced_sample_mean <- mean(crowdsourced$PM)
+cat("The crowdsourced data has a sample mean of", crowdsourced_sample_mean,"\n" )
+randomized_sample_mean <- mean(randomized_dataset$PM)
+cat("The random sample data has a sample mean of", randomized_sample_mean, "\n")
+straifided_sample_mean <- mean(stratified_random_sample$PM)
+cat("The stratified random sample data has a sample mean of", straifided_sample_mean, "\n")
+```
+The sample mean of the crowd-sourced data matches the satellite data best. I would recommend that the Prime Minister encourage residents of the city of Lahore to allow monitors to be placed near their homes and businesses. I would also recommend he discontinue the current government program entirely as it only serves to confuse the public. My proposed sampling strategy relies more on crowd-sourced data because it has a higher likelihood of being a true random sampling of the population of air quality then a government led effort. 
