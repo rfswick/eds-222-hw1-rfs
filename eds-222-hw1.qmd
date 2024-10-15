@@ -84,9 +84,13 @@ The goal of pollution monitoring in Lahore is to measure the average pollution c
 
 The population is air quality throughout the city of Lahore.
 
+
+
 2.  What are the *samples* in this setting? Please be precise. 
 
 The samples are the air quality measures at the monitoring sites.
+
+Correct Answer: The samples are the areas where monitors are installed and collecting data, either for the people or the government. The fact that the data are collected with different methodologies make these separate samples, so we have a sample of crowd-sourced data and one for the government data. Both samples represent daily observations taken from November 04th, 2018 to November 30th, 2019.
 
 3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters. 
 
@@ -170,6 +174,8 @@ combined_dataset <- bind_rows(govt, crowdsourced)
 
 # Create a random sample of 1000 points from the combined dataset
 randomized_dataset <- slice_sample(.data = combined_dataset, n = 1000)
+
+dim(randomized_dataset)
 ```
 
 
