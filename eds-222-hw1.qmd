@@ -1,7 +1,10 @@
 ---
 title: "EDS 222: Homework 1"
-date: "10/14/2024"
+date: "10/29/2024"
 author: "Rachel Swick"
+execute: 
+  warning: false
+  message: false
 ---
 
 ## Background
@@ -28,10 +31,12 @@ In answering the following questions, please consider the lecture content from c
 
 Load the data from each source and label it as `crowdsourced` and `govt` accordingly. For example:
 
-``` r
+
+```{r}
 crowdsourced <- readRDS(file.path("data", "airpol-PK-crowdsourced.RDS"))
 govt <- readRDS(file.path("data", "airpol-PK-govt.RDS"))
 ```
+
 
 ```{r}
 # Load libraries
@@ -82,19 +87,15 @@ The goal of pollution monitoring in Lahore is to measure the average pollution c
 
 1.  What is the *population* in this setting? Please be precise. 
 
-The population is air quality throughout the city of Lahore.
-
-
+**The population is air quality throughout the city of Lahore from November 04, 2018 to November 30, 2019.
 
 2.  What are the *samples* in this setting? Please be precise. 
 
-The samples are the air quality measures at the monitoring sites.
-
-Correct Answer: The samples are the areas where monitors are installed and collecting data, either for the people or the government. The fact that the data are collected with different methodologies make these separate samples, so we have a sample of crowd-sourced data and one for the government data. Both samples represent daily observations taken from November 04th, 2018 to November 30th, 2019.
+**The fact that the data are collected with different methodologies make these separate samples, so we have a sample of crowd-sourced data and one for the government data. Both samples represent daily observations taken from November 04, 2018 to November 30, 2019.
 
 3.  These samples were not randomly collected from across locations in Lahore. Given the sampling approaches described above, discuss possible biases that may enter when we use these samples to construct estimates of population parameters. 
 
-The government data suffers from sampling bias because the government monitoring sites are not a random sample of air quality measures in the city of Lahore. This will likely result in the sample mean of PM 2.5 being lower than the true population mean. The crowd-sourced data also has the potential to suffer from sampling bias. Individuals who agree to have monitoring units near their homes are businesses may be incentivized to have a monitoring unit within their home or business if they know the air quaility in their area is bad. The crowd-sourced mean is more likely to me closer to the true sample mean of the population.  
+The government data suffers from sampling bias because the government monitoring sites are not a random sample of air quality measures in the city of Lahore. This will likely result in the sample mean of PM 2.5 being lower than the true population mean. The crowd-sourced data also has the potential to suffer from sampling bias. Individuals who agree to have monitoring units near their homes are businesses may be incentivized to have a monitoring unit within their home or business if they know the air quality in their area is bad. The crowd-sourced mean is more likely to me closer to the true sample mean of the population.  
 
 ### Question 3
 
@@ -126,7 +127,7 @@ The crowd-sourced data has a larger sample mean then the government data. The sa
 
 3.  Are the differences in mean pollution as expected, given what we know about the sampling strategies?
 
-Yes. We expected the sample mean of the crowd-sourced data to be higher than the sample mean of the government data because the government is thought to be intentionally choosing monitoring locations with better air quality.
+**Yes. We expected the sample mean of the crowd-sourced data to be higher than the sample mean of the government data because the government is thought to be intentionally choosing monitoring locations with better air quality. In addition, bias from the crowd-sourced data may be artificially inflating the sample mean because the observations are likely coming from homes where residents are concerned about poor air quality.
 
 ### Question 4
 
@@ -202,13 +203,32 @@ Compare estimated means of PM 2.5 for each sampling strategy to the NASA estimat
 
 ```{r}
 # Compare sample means based on sampling strategy
-govt_sample_mean <- mean(govt$PM)
-cat("The government data has a sample mean of", govt_sample_mean, "\n")
-crowdsourced_sample_mean <- mean(crowdsourced$PM)
-cat("The crowdsourced data has a sample mean of", crowdsourced_sample_mean,"\n" )
 randomized_sample_mean <- mean(randomized_dataset$PM)
 cat("The random sample data has a sample mean of", randomized_sample_mean, "\n")
 straifided_sample_mean <- mean(stratified_random_sample$PM)
 cat("The stratified random sample data has a sample mean of", straifided_sample_mean, "\n")
 ```
-The sample mean of the crowd-sourced data matches the satellite data best. I would recommend that the Prime Minister encourage residents of the city of Lahore to allow monitors to be placed near their homes and businesses. I would also recommend he discontinue the current government program entirely as it only serves to confuse the public. My proposed sampling strategy relies more on crowd-sourced data because it has a higher likelihood of being a true random sampling of the population of air quality then a government led effort. 
+The sample mean of the stratified random sample matches the satellite data best. I would recommend that the Prime Minister encourage residents of the city of Lahore to allow monitors to be placed near their homes and businesses. I would also recommend he discontinue the current government program entirely as it only serves to confuse the public. My proposed sampling strategy relies more on crowd-sourced data because it has a higher likelihood of being a true random sampling of the population of air quality then a government led effort. I would also recommend utilizing a stratified random sampling method as it better able to control for potentially biased data in this system.
+
+```{r}
+# Percentage of pooled data that comes from government monitors
+govt_per <- (nrow(govt) / nrow(crowdsourced)) * 100
+cat("Government data makes up approximately", govt_per, "percent of the pooled data.")
+```
+
+When stratifying the pooled dataset, all of the samples from government monitors are pooled into the same strata.
+
+```{r}
+# Proof all government data is in one strata
+govt_strat <- govt %>% 
+  mutate(lat_rounded = round(latitude, digits = 2))
+n_distinct(govt_strat$lat_rounded) 
+```
+
+Since all the data from government monitoring sites is limited to one strata, and there is only 5 strata, observations from the government data is limited to only 20 percent of the sample mean. Observations from the government data are extremely biased, so limiting its influence results in a sample mean that better represents the population mean.
+
+
+
+
+
+
